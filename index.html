@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<title>🌻</title>
+<title>Para Nany 🌻</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -71,8 +71,18 @@ body{
   30%{transform:rotate(1.4deg);}
   70%{transform:rotate(-1.2deg);}
 }
-/* tell GPU to composite canvas on its own layer */
 #pcv{will-change:transform;}
+
+/* ── MOBILE PERFORMANCE ──
+   SVG filter="url(#sf)" on animated groups forces CPU rasterization every frame.
+   Strip everything that causes per-frame repaint on mobile.
+*/
+@media(max-width:768px){
+  #bsv{filter:none !important;}          /* kills the outer drop-shadow */
+  body{background:linear-gradient(150deg,#fdf5dc 0%,#f8dfa0 55%,#eabf62 100%);}
+  .orb{display:none;}                    /* fewer compositor layers */
+  #pcv{will-change:auto;}               /* let browser decide on mobile */
+}
 
 /* ── MESSAGE ── */
 #msg{
@@ -324,13 +334,13 @@ body{
   </div>
 
   <div id="msg">
-    <div class="mname">NANY </div>
+    <div class="mname">NANY ✨</div>
     <div class="mdiv"></div>
     <p class="mbody">
-      Sé que te gustan los girasoles,<br>
-      así que quise dejarte uno por aquí.<br><br>
-      Puede que no siempre digas mucho,<br>
-      pero hablar contigo siempre deja algo bueno.
+      Sé que te gustan los girasoles, así que quería<br>
+      regalarte uno de una forma un poquito diferente.<br><br>
+      A veces los pequeños detalles dicen mucho más<br>
+      que las palabras, y este es solo uno de ellos.
     </p>
   </div>
 </div>
@@ -341,8 +351,15 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 /* ═══ MOBILE PERFORMANCE DETECTION ═══ */
 const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || innerWidth < 768;
-const MAX_PARTS  = isMobile ? 18 : 55;   // fewer particles on mobile
-const SEED_SCALE = isMobile ? 0.45 : 1;  // fewer SVG seed nodes on mobile
+const MAX_PARTS  = isMobile ? 10 : 50;   // drastically fewer on mobile
+const SEED_SCALE = isMobile ? 0.35 : 1;  // 65% fewer SVG seed nodes on mobile
+
+/* Strip every SVG filter attribute on mobile.
+   Each filter="url(#sf)" on an animated parent = full CPU rasterisation per frame. */
+function stripFilters(){
+  if(!isMobile) return;
+  document.querySelectorAll('[filter]').forEach(el=>el.removeAttribute('filter'));
+}
 
 /* ═══ FLOWER DATA ═══ */
 const FLOWERS = [
@@ -398,8 +415,13 @@ function mkp(){
     life:1, decay: Math.random()*.0014+.0003, t
   };
 }
-let _t = 0; // shared time counter incremented once per frame
-function drawParts(){
+let _t = 0;
+let _lastFrame = 0;
+const _targetMs = isMobile ? 50 : 16; // ~20fps mobile, ~60fps desktop
+function drawParts(ts){
+  requestAnimationFrame(drawParts);
+  if(ts - _lastFrame < _targetMs) return; // throttle
+  _lastFrame = ts;
   _t += 0.016;
   pc.clearRect(0,0,innerWidth,innerHeight);
   if(parts.length < MAX_PARTS) parts.push(mkp());
@@ -428,13 +450,18 @@ function drawParts(){
       }
       pc.restore();
     } else if(p.t==='spark'){
-      pc.save(); pc.translate(p.x,p.y); pc.rotate(p.rot);
       pc.fillStyle=`hsla(${p.h+22},100%,80%,1)`;
-      const s=p.sz*.48;
-      for(let a=0;a<4;a++){ pc.rotate(Math.PI/2); pc.beginPath();
-        pc.moveTo(0,0); pc.lineTo(s*.28,s*.28); pc.lineTo(0,s*1.15);
-        pc.lineTo(-s*.28,s*.28); pc.closePath(); pc.fill(); }
-      pc.restore();
+      if(isMobile){
+        // simple circle on mobile instead of 4-triangle star
+        pc.beginPath(); pc.arc(p.x,p.y,p.sz*.5,0,Math.PI*2); pc.fill();
+      } else {
+        pc.save(); pc.translate(p.x,p.y); pc.rotate(p.rot);
+        const s=p.sz*.48;
+        for(let a=0;a<4;a++){ pc.rotate(Math.PI/2); pc.beginPath();
+          pc.moveTo(0,0); pc.lineTo(s*.28,s*.28); pc.lineTo(0,s*1.15);
+          pc.lineTo(-s*.28,s*.28); pc.closePath(); pc.fill(); }
+        pc.restore();
+      }
     } else {
       pc.fillStyle=`hsla(${p.h},88%,74%,1)`;
       pc.beginPath(); pc.arc(p.x,p.y,p.sz*.48,0,Math.PI*2); pc.fill();
@@ -442,7 +469,6 @@ function drawParts(){
     return true;
   });
   pc.globalAlpha=1;
-  requestAnimationFrame(drawParts);
 }
 
 /* ═══ EASING ═══ */
@@ -571,6 +597,9 @@ async function start(){
   FLOWERS.forEach(f=>buildFlower(f));
   LEAVES.forEach(l=>setLeaf(l.id,l.ax,l.ay,0));
 
+  // CRITICAL: remove all SVG filter attributes on mobile before animation starts
+  stripFilters();
+
   await sleep(80);
 
   /* 1 — stems all grow, staggered slightly */
@@ -600,11 +629,11 @@ async function start(){
     if(i<4) await sleep(140);
   }
 
-  /* 5 — sway */
-  document.getElementById('svgWrap').classList.add('sway');
+  /* 5 — sway (desktop only — on mobile the whole bouquet repaints every frame) */
+  if(!isMobile) document.getElementById('svgWrap').classList.add('sway');
 
   /* 6 — particles */
-  pcv.classList.add('on'); drawParts();
+  pcv.classList.add('on'); requestAnimationFrame(drawParts);
 
   /* 7 — message */
   await sleep(650);
