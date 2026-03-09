@@ -64,13 +64,15 @@ body{
      filter:drop-shadow(0 18px 48px rgba(100,55,4,.18));}
 
 /* whole bouquet gentle sway from grip */
-#bouquet{transform-origin:220px 500px;}
+#bouquet{transform-origin:220px 500px;will-change:transform;}
 #svgWrap.sway #bouquet{animation:sway 5s ease-in-out infinite;}
 @keyframes sway{
   0%,100%{transform:rotate(0deg);}
   30%{transform:rotate(1.4deg);}
   70%{transform:rotate(-1.2deg);}
 }
+/* tell GPU to composite canvas on its own layer */
+#pcv{will-change:transform;}
 
 /* ── MESSAGE ── */
 #msg{
@@ -337,6 +339,11 @@ body{
 const NS = 'http://www.w3.org/2000/svg';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+/* ═══ MOBILE PERFORMANCE DETECTION ═══ */
+const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || innerWidth < 768;
+const MAX_PARTS  = isMobile ? 18 : 55;   // fewer particles on mobile
+const SEED_SCALE = isMobile ? 0.45 : 1;  // fewer SVG seed nodes on mobile
+
 /* ═══ FLOWER DATA ═══ */
 const FLOWERS = [
   { id:0, cx:220, cy: 88, dr:51, oLen:88, iLen:70, pW:30, oN:22, iN:15, seeds:220 },
@@ -359,47 +366,66 @@ const LEAVES = [
 /* ═══ PARTICLES ═══ */
 const pcv = document.getElementById('pcv'), pc = pcv.getContext('2d');
 let parts = [];
-function rsz(){ pcv.width = innerWidth; pcv.height = innerHeight; }
+// Cap pixel ratio at 1.5 — retina at full ratio kills mobile GPUs
+const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
+function rsz(){
+  pcv.width  = innerWidth  * DPR;
+  pcv.height = innerHeight * DPR;
+  pcv.style.width  = innerWidth  + 'px';
+  pcv.style.height = innerHeight + 'px';
+  pc.scale(DPR, DPR);
+}
 rsz(); addEventListener('resize', rsz);
 function mkp(){
   const t = ['petal','petal','petal','spark','circle'][Math.floor(Math.random()*5)];
+  const h = Math.random()*22+38;
+  // Pre-bake color strings once so drawParts never builds strings per frame
+  const c0 = `hsla(${h+12},100%,74%,1)`;
+  const c1 = `hsla(${h},95%,60%,1)`;
+  const c2 = `hsla(${h-10},90%,45%,.7)`;
   return{
-    x: Math.random()*pcv.width,
-    y: -20 - Math.random()*80,          // born above the screen
-    sz: Math.random()*7+4,              // slightly bigger petals
-    vy: Math.random()*.7+.25,           // fall downward (positive)
-    vx: (Math.random()-.5)*.6,          // gentle lateral drift
+    x: Math.random()*innerWidth,
+    y: -20 - Math.random()*80,
+    sz: Math.random()*7+4,
+    vy: Math.random()*.65+.22,
+    vx: (Math.random()-.5)*.5,
+    // pre-compute a random phase offset so we avoid Date.now() per particle
+    phase: Math.random()*Math.PI*2,
     op: Math.random()*.6+.25,
     rot: Math.random()*Math.PI*2,
-    rs: (Math.random()-.5)*.025,        // slow spin
-    h: Math.random()*22+38,             // golden-yellow hues 38–60
-    life:1, decay:Math.random()*.0012+.0003, t
+    rs: (Math.random()-.5)*.022,
+    h, c0, c1, c2,
+    life:1, decay: Math.random()*.0014+.0003, t
   };
 }
+let _t = 0; // shared time counter incremented once per frame
 function drawParts(){
-  pc.clearRect(0,0,pcv.width,pcv.height);
-  if(parts.length<60) parts.push(mkp());
+  _t += 0.016;
+  pc.clearRect(0,0,innerWidth,innerHeight);
+  if(parts.length < MAX_PARTS) parts.push(mkp());
   parts = parts.filter(p=>{
-    p.x += p.vx + Math.sin(Date.now()*.0006+p.x*.008)*.35;
+    // use pre-baked phase offset instead of Date.now() per particle
+    p.x += p.vx + Math.sin(_t*.6 + p.phase)*.28;
     p.y += p.vy; p.rot += p.rs; p.life -= p.decay;
-    if(p.life<=0||p.y>pcv.height+30) return false;  // die at bottom
-    pc.globalAlpha = p.op*p.life;
+    if(p.life<=0 || p.y > innerHeight+30) return false;
+    pc.globalAlpha = p.op * p.life;
     if(p.t==='petal'){
-      // sunflower petal: long narrow oval with warm yellow gradient
-      pc.save(); pc.translate(p.x,p.y); pc.rotate(p.rot);
       const w=p.sz*.38, h=p.sz*1.1;
-      const g=pc.createLinearGradient(0,-h,0,h*.3);
-      g.addColorStop(0,  `hsla(${p.h+12},100%,74%,1)`);   // tip: bright yellow
-      g.addColorStop(0.5,`hsla(${p.h},    95%,60%,1)`);   // mid: golden
-      g.addColorStop(1,  `hsla(${p.h-10}, 90%,45%,.7)`);  // base: amber
-      pc.fillStyle=g;
+      pc.save(); pc.translate(p.x,p.y); pc.rotate(p.rot);
+      // create gradient once using pre-baked color strings
+      const g = pc.createLinearGradient(0,-h,0,h*.3);
+      g.addColorStop(0,   p.c0);
+      g.addColorStop(0.5, p.c1);
+      g.addColorStop(1,   p.c2);
+      pc.fillStyle = g;
       pc.beginPath();
       pc.ellipse(0,-h*.35,w,h,0,0,Math.PI*2);
       pc.fill();
-      // central vein
-      pc.strokeStyle=`hsla(${p.h-8},80%,38%,.3)`;
-      pc.lineWidth=.6;
-      pc.beginPath(); pc.moveTo(0,h*.4); pc.lineTo(0,-h*.9); pc.stroke();
+      if(!isMobile){ // skip vein stroke on mobile — saves ~30% canvas time
+        pc.strokeStyle=`hsla(${p.h-8},80%,38%,.28)`;
+        pc.lineWidth=.6;
+        pc.beginPath(); pc.moveTo(0,h*.4); pc.lineTo(0,-h*.9); pc.stroke();
+      }
       pc.restore();
     } else if(p.t==='spark'){
       pc.save(); pc.translate(p.x,p.y); pc.rotate(p.rot);
@@ -451,7 +477,8 @@ function buildFlower(f){
     g.setAttribute('transform',`translate(${bx},${by}) rotate(${ang}) scale(0)`);
     g.style.opacity='0';
     const p=document.createElementNS(NS,'path');
-    p.setAttribute('d',petalD(len,w)); p.setAttribute('fill',`url(#${grads[i%3]})`); p.setAttribute('filter','url(#sf)');
+    p.setAttribute('d',petalD(len,w)); p.setAttribute('fill',`url(#${grads[i%3]})`);
+    if(!isMobile) p.setAttribute('filter','url(#sf)'); // skip heavy drop-shadow on mobile
     const v=document.createElementNS(NS,'path');
     v.setAttribute('d',`M0,0 L0,${-len*.68}`); v.setAttribute('stroke','rgba(148,88,0,.16)'); v.setAttribute('stroke-width','.8'); v.setAttribute('fill','none');
     g.appendChild(p); g.appendChild(v); og.appendChild(g);
@@ -472,9 +499,9 @@ function buildFlower(f){
   }
   flowerPetals[id]=list;
 
-  // seeds
+  // seeds — reduce count on mobile to cut DOM nodes
   const sg=document.getElementById('ssg'+id);
-  const ga=137.508*Math.PI/180, N=f.seeds, maxR=dr-5;
+  const ga=137.508*Math.PI/180, N=Math.round(f.seeds*SEED_SCALE), maxR=dr-5;
   for(let i=0;i<N;i++){
     const t=i/N, r=Math.sqrt(t)*maxR, th=i*ga;
     const x=cx+r*Math.cos(th), y=cy+r*Math.sin(th), sz=1.8+(1-t)*1.5;
