@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<title>Para Nany 🌻</title>
+<title>Para Daniela</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -11,10 +11,9 @@ html,body{width:100%;min-height:100vh;overflow-x:hidden;}
 body{
   font-family:'Cormorant Garamond',serif;
   background:
-    radial-gradient(ellipse at 18% 14%, rgba(255,230,120,.28) 0%, transparent 52%),
-    radial-gradient(ellipse at 82% 80%, rgba(255,185,70,.22) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 50%, rgba(255,245,200,.18) 0%, transparent 70%),
-    linear-gradient(148deg, #fdf5dc 0%, #fbecc4 28%, #f8dfa0 55%, #f2ce80 80%, #eabf62 100%);
+    radial-gradient(ellipse at 20% 15%, rgba(255,240,190,.20) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 82%, rgba(255,210,140,.15) 0%, transparent 52%),
+    linear-gradient(150deg, #fefcf4 0%, #fdf8ea 28%, #faf2d8 58%, #f5e8c2 100%);
   min-height:100vh;
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
@@ -22,9 +21,9 @@ body{
 }
 .orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;}
 .o1{width:520px;height:520px;top:-160px;right:-120px;
-    background:radial-gradient(circle,rgba(255,218,80,.13)0%,transparent 70%);}
+    background:radial-gradient(circle,rgba(255,235,160,.10)0%,transparent 70%);}
 .o2{width:440px;height:440px;bottom:-140px;left:-110px;
-    background:radial-gradient(circle,rgba(255,178,60,.10)0%,transparent 70%);}
+    background:radial-gradient(circle,rgba(255,210,140,.08)0%,transparent 70%);}
 
 #pcv{position:fixed;inset:0;pointer-events:none;z-index:1;
      opacity:0;transition:opacity 1.6s ease;}
@@ -59,17 +58,39 @@ body{
 }
 #scene.on{display:flex;}
 
-#svgWrap{width:min(400px,92vw);}
+#svgWrap{width:min(400px,92vw); position:relative;}
 #bsv{width:100%;height:auto;overflow:visible;
      filter:drop-shadow(0 18px 48px rgba(100,55,4,.18));}
 
+/* Glow ring — sits behind SVG, only animates opacity = GPU composited, zero repaint */
+#glowRing{
+  position:absolute;
+  top:50%; left:50%;
+  width:88%; height:55%;
+  transform:translate(-50%, -38%);
+  border-radius:50%;
+  background:radial-gradient(ellipse, rgba(255,240,190,.65) 0%, rgba(255,220,150,.22) 45%, transparent 72%);
+  opacity:0;
+  pointer-events:none;
+  z-index:-1;
+  /* transition for the initial fade-in */
+  transition:opacity 1s ease;
+}
+#glowRing.pulse{
+  animation:glowPulse 2s ease-in-out infinite;
+}
+@keyframes glowPulse{
+  0%,100%{opacity:.55;}
+  50%{opacity:.85;}
+}
+
 /* whole bouquet gentle sway from grip */
 #bouquet{transform-origin:220px 500px;will-change:transform;}
-#svgWrap.sway #bouquet{animation:sway 5s ease-in-out infinite;}
+#svgWrap.sway #bouquet{animation:sway 7s ease-in-out infinite;}
 @keyframes sway{
   0%,100%{transform:rotate(0deg);}
-  30%{transform:rotate(1.4deg);}
-  70%{transform:rotate(-1.2deg);}
+  32%{transform:rotate(.9deg);}
+  68%{transform:rotate(-.8deg);}
 }
 #pcv{will-change:transform;}
 
@@ -79,7 +100,7 @@ body{
 */
 @media(max-width:768px){
   #bsv{filter:none !important;}          /* kills the outer drop-shadow */
-  body{background:linear-gradient(150deg,#fdf5dc 0%,#f8dfa0 55%,#eabf62 100%);}
+  body{background:linear-gradient(150deg,#fefcf4 0%,#faf2d8 55%,#f5e8c2 100%);}
   .orb{display:none;}                    /* fewer compositor layers */
   #pcv{will-change:auto;}               /* let browser decide on mobile */
 }
@@ -95,8 +116,9 @@ body{
 #msg.on{opacity:1;transform:translateY(0);}
 .mname{
   font-family:'Playfair Display',serif;
-  font-size:clamp(2.1rem,7vw,2.6rem);
-  color:#5a3618;letter-spacing:.16em;margin-bottom:14px;
+  font-size:clamp(2rem,7vw,2.5rem);
+  color:#5a3c18;letter-spacing:.08em;margin-bottom:14px;
+  font-weight:400;
 }
 .mdiv{
   width:60px;height:1px;margin:0 auto 18px;
@@ -104,14 +126,49 @@ body{
 }
 .mbody{
   font-size:clamp(1.05rem,4vw,1.15rem);
-  color:#7a5a3a;line-height:2;
-  font-weight:300;font-style:italic;letter-spacing:.018em;
+  color:#6e5030;line-height:2.1;
+  font-weight:300;letter-spacing:.022em;
 }
 @media(max-width:400px){
   .mname{font-size:2rem;}
   .mbody{font-size:1rem;line-height:1.95;}
   #msg{padding:0 14px;}
 }
+
+/* ── SINGLE BUTTON ── */
+#btns{
+  display:flex;justify-content:center;
+  margin-top:28px;
+  opacity:0;transform:translateY(12px);
+  transition:opacity 1s ease,transform 1s ease;
+}
+#btns.on{opacity:1;transform:translateY(0);}
+.rbtn{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(1rem,4vw,1.1rem);
+  letter-spacing:.08em;
+  padding:13px 36px;border-radius:50px;
+  border:1px solid rgba(160,120,60,.32);
+  cursor:pointer;transition:all .3s cubic-bezier(.25,.8,.25,1);
+  background:linear-gradient(135deg,#fefcf4,#fdf6e0);
+  color:#5a3c18;
+  box-shadow:0 2px 14px rgba(150,100,20,.10),inset 0 1px 0 rgba(255,255,255,.7);
+}
+.rbtn:hover{transform:translateY(-2px);
+  box-shadow:0 6px 24px rgba(150,100,20,.16),inset 0 1px 0 rgba(255,255,255,.82);}
+.rbtn:active{transform:translateY(0);}
+
+/* ── REPLY MESSAGE ── */
+#reply{
+  margin-top:16px;min-height:32px;
+  text-align:center;
+  font-size:clamp(.95rem,3.8vw,1.08rem);
+  font-style:italic;color:#8a5e2a;
+  opacity:0;transform:translateY(8px);
+  transition:opacity .6s ease,transform .6s ease;
+  padding:0 18px;
+}
+#reply.on{opacity:1;transform:translateY(0);}
 </style>
 </head>
 <body>
@@ -120,12 +177,13 @@ body{
 <canvas id="pcv"></canvas>
 
 <div id="landing">
-  <p class="land-pre">una pequeña obra para ti</p>
-  <button id="btn" onclick="start()">Abrir detalle 🌻</button>
+  <p class="land-pre">algo para ti</p>
+  <button id="btn" onclick="start()">Ver</button>
 </div>
 
 <div id="scene">
   <div id="svgWrap">
+  <div id="glowRing"></div>
   <!--
     ViewBox: 0 0 440 560
     Bouquet grip centre: (220, 490)
@@ -174,9 +232,10 @@ body{
       <linearGradient id="wpS" x1="0%" y1="0%" x2="0%" y2="100%">
         <stop offset="0%"  stop-color="rgba(210,180,90,.18)"/><stop offset="100%" stop-color="rgba(180,140,60,.28)"/>
       </linearGradient>
-      <!-- ribbon -->
+      <!-- ribbon — soft blush/dusty rose to differentiate -->
       <linearGradient id="rbG" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%"  stop-color="#e87040"/><stop offset="100%" stop-color="#b83c10"/>
+        <stop offset="0%"  stop-color="#d4a0a8"/>
+        <stop offset="100%" stop-color="#a86070"/>
       </linearGradient>
       <filter id="sf" x="-15%" y="-15%" width="130%" height="130%">
         <feDropShadow dx="0" dy="2" stdDeviation="2.8" flood-color="rgba(50,20,0,.18)"/>
@@ -184,19 +243,17 @@ body{
       <filter id="sfS" x="-8%" y="-8%" width="116%" height="116%">
         <feDropShadow dx="0" dy="1.5" stdDeviation="1.8" flood-color="rgba(50,20,0,.14)"/>
       </filter>
-      <!-- clip paths for each disc -->
-      <clipPath id="dc0"><circle cx="220" cy=" 88" r="49"/></clipPath>
-      <clipPath id="dc1"><circle cx="150" cy="118" r="43"/></clipPath>
-      <clipPath id="dc2"><circle cx="290" cy="112" r="43"/></clipPath>
-      <clipPath id="dc3"><circle cx=" 80" cy="165" r="37"/></clipPath>
-      <clipPath id="dc4"><circle cx="360" cy="155" r="37"/></clipPath>
+      <!-- clip paths -->
+      <clipPath id="dc0"><circle cx="220" cy="84" r="57"/></clipPath>
+      <clipPath id="dc1"><circle cx="150" cy="118" r="47"/></clipPath>
+      <clipPath id="dc2"><circle cx="290" cy="112" r="47"/></clipPath>
     </defs>
 
     <!-- whole bouquet in one group for unified sway -->
     <g id="bouquet">
 
       <!-- ══ STEMS ══ (drawn first, behind everything) -->
-      <!-- F0 centre — straight up with slight lean -->
+      <!-- F0 centre — straight up -->
       <path id="st0" class="stm"
         d="M222,472 C221,440 220,380 220,310 C220,240 220,170 220,138"
         fill="none" stroke="url(#stG)" stroke-width="9" stroke-linecap="round" filter="url(#sf)"/>
@@ -208,98 +265,60 @@ body{
       <path id="st2" class="stm"
         d="M222,474 C226,448 235,398 250,340 C264,284 278,228 290,156"
         fill="none" stroke="url(#stG)" stroke-width="9" stroke-linecap="round" filter="url(#sf)"/>
-      <!-- F3 far-left -->
-      <path id="st3" class="stm"
-        d="M216,476 C208,448 188,400 160,348 C132,296  104,240  80,203"
-        fill="none" stroke="url(#stG)" stroke-width="8" stroke-linecap="round" filter="url(#sf)"/>
-      <!-- F4 far-right -->
-      <path id="st4" class="stm"
-        d="M224,476 C232,448 252,400 280,348 C308,296 336,240 360,193"
-        fill="none" stroke="url(#stG)" stroke-width="8" stroke-linecap="round" filter="url(#sf)"/>
 
-      <!-- ══ LEAVES ══  (attached at mid-stem points) -->
-      <!-- Leaves on F1 left stem, around y=300 -->
-      <g id="lf0" opacity="0"><!-- points left -->
-        <path d="M0,0 C-5,-7 -22,-16 -38,-12 C-54,-8 -56,5 -44,10 C-32,14 -8,6 0,0Z"
+      <!-- Leaf: F1 left stem, points left  y≈305 -->
+      <g id="lf0" opacity="0">
+        <path d="M0,0 C-6,-9 -26,-20 -46,-15 C-66,-10 -68,6 -54,13 C-40,18 -10,7 0,0Z"
           fill="url(#lfL)" filter="url(#sfS)"/>
-        <path d="M0,0 C-15,-6 -33,-6 -42,2" stroke="#255018" stroke-width=".7" fill="none" opacity=".38"/>
+        <path d="M0,0 C-18,-7 -40,-7 -52,3" stroke="#255018" stroke-width=".8" fill="none" opacity=".4"/>
       </g>
-      <!-- Leaves on F2 right stem, around y=295 -->
-      <g id="lf1" opacity="0"><!-- points right -->
-        <path d="M0,0 C5,-7 22,-16 38,-12 C54,-8 56,5 44,10 C32,14 8,6 0,0Z"
+      <!-- Leaf: F2 right stem, points right  y≈298 -->
+      <g id="lf1" opacity="0">
+        <path d="M0,0 C6,-9 26,-20 46,-15 C66,-10 68,6 54,13 C40,18 10,7 0,0Z"
           fill="url(#lfR)" filter="url(#sfS)"/>
-        <path d="M0,0 C15,-6 33,-6 42,2" stroke="#255018" stroke-width=".7" fill="none" opacity=".38"/>
+        <path d="M0,0 C18,-7 40,-7 52,3" stroke="#255018" stroke-width=".8" fill="none" opacity=".4"/>
       </g>
-      <!-- Leaves on F0 centre stem, around y=320 -->
+      <!-- Leaf: F0 centre stem left  y≈335 -->
       <g id="lf2" opacity="0">
-        <path d="M0,0 C-5,-7 -22,-16 -38,-12 C-54,-8 -56,5 -44,10 C-32,14 -8,6 0,0Z"
+        <path d="M0,0 C-5,-8 -24,-18 -42,-14 C-60,-9 -62,6 -48,12 C-34,16 -8,6 0,0Z"
           fill="url(#lfL)" filter="url(#sfS)"/>
       </g>
+      <!-- Leaf: F0 centre stem right  y≈335 -->
       <g id="lf3" opacity="0">
-        <path d="M0,0 C5,-7 22,-16 38,-12 C54,-8 56,5 44,10 C32,14 8,6 0,0Z"
-          fill="url(#lfR)" filter="url(#sfS)"/>
-      </g>
-      <!-- Leaves on F3 far-left stem -->
-      <g id="lf4" opacity="0">
-        <path d="M0,0 C-4,-6 -18,-13 -30,-10 C-42,-7 -44,4 -35,8 C-26,12 -6,5 0,0Z"
-          fill="url(#lfL)" filter="url(#sfS)"/>
-      </g>
-      <!-- Leaves on F4 far-right stem -->
-      <g id="lf5" opacity="0">
-        <path d="M0,0 C4,-6 18,-13 30,-10 C42,-7 44,4 35,8 C26,12 6,5 0,0Z"
+        <path d="M0,0 C5,-8 24,-18 42,-14 C60,-9 62,6 48,12 C34,16 8,6 0,0Z"
           fill="url(#lfR)" filter="url(#sfS)"/>
       </g>
 
-      <!-- ══ FLOWERS  back→front z-order: F3,F4,F1,F2,F0 ══ -->
+      <!-- ══ FLOWERS  back→front z-order: F1, F2, F0 ══ -->
 
-      <!-- F3 far-left  cx=80,cy=165,dr=38 -->
-      <g id="fg3"><g id="pig3"></g><g id="pog3"></g>
-        <g id="cg3" opacity="0">
-          <circle cx="80" cy="167" r="41" fill="rgba(0,0,0,.09)"/>
-          <circle cx="80" cy="165" r="40" fill="url(#dG)"/>
-          <circle cx="80" cy="165" r="40" fill="url(#dRim)"/>
-          <g clip-path="url(#dc3)"><g id="ssg3"></g></g>
-        </g>
-      </g>
-
-      <!-- F4 far-right  cx=360,cy=155,dr=38 -->
-      <g id="fg4"><g id="pig4"></g><g id="pog4"></g>
-        <g id="cg4" opacity="0">
-          <circle cx="360" cy="157" r="41" fill="rgba(0,0,0,.09)"/>
-          <circle cx="360" cy="155" r="40" fill="url(#dG)"/>
-          <circle cx="360" cy="155" r="40" fill="url(#dRim)"/>
-          <g clip-path="url(#dc4)"><g id="ssg4"></g></g>
-        </g>
-      </g>
-
-      <!-- F1 left  cx=150,cy=118,dr=44 -->
+      <!-- F1 left  cx=150,cy=118,dr=46 -->
       <g id="fg1"><g id="pig1"></g><g id="pog1"></g>
         <g id="cg1" opacity="0">
-          <circle cx="150" cy="120" r="47" fill="rgba(0,0,0,.09)"/>
-          <circle cx="150" cy="118" r="46" fill="url(#dG)"/>
-          <circle cx="150" cy="118" r="46" fill="url(#dRim)"/>
+          <circle cx="150" cy="120" r="50" fill="rgba(0,0,0,.08)"/>
+          <circle cx="150" cy="118" r="48" fill="url(#dG)"/>
+          <circle cx="150" cy="118" r="48" fill="url(#dRim)"/>
           <g clip-path="url(#dc1)"><g id="ssg1"></g></g>
         </g>
       </g>
 
-      <!-- F2 right  cx=290,cy=112,dr=44 -->
+      <!-- F2 right  cx=290,cy=112,dr=46 -->
       <g id="fg2"><g id="pig2"></g><g id="pog2"></g>
         <g id="cg2" opacity="0">
-          <circle cx="290" cy="114" r="47" fill="rgba(0,0,0,.09)"/>
-          <circle cx="290" cy="112" r="46" fill="url(#dG)"/>
-          <circle cx="290" cy="112" r="46" fill="url(#dRim)"/>
+          <circle cx="290" cy="114" r="50" fill="rgba(0,0,0,.08)"/>
+          <circle cx="290" cy="112" r="48" fill="url(#dG)"/>
+          <circle cx="290" cy="112" r="48" fill="url(#dRim)"/>
           <g clip-path="url(#dc2)"><g id="ssg2"></g></g>
         </g>
       </g>
 
-      <!-- F0 centre  cx=220,cy=88,dr=50 -->
+      <!-- F0 centre  cx=220,cy=84 — main flower, larger -->
       <g id="fg0"><g id="pig0"></g><g id="pog0"></g>
         <g id="cg0" opacity="0">
-          <circle cx="220" cy="90" r="53" fill="rgba(0,0,0,.10)"/>
-          <circle cx="220" cy="88" r="51" fill="url(#dG)"/>
-          <circle cx="220" cy="88" r="51" fill="url(#dRim)"/>
+          <circle cx="220" cy="86" r="60" fill="rgba(0,0,0,.09)"/>
+          <circle cx="220" cy="84" r="58" fill="url(#dG)"/>
+          <circle cx="220" cy="84" r="58" fill="url(#dRim)"/>
           <g clip-path="url(#dc0)"><g id="ssg0"></g></g>
-          <ellipse cx="207" cy="74" rx="18" ry="11" fill="rgba(255,215,130,.07)" transform="rotate(-22,207,74)"/>
+          <ellipse cx="206" cy="70" rx="20" ry="12" fill="rgba(255,215,130,.07)" transform="rotate(-22,206,70)"/>
         </g>
       </g>
 
@@ -318,15 +337,15 @@ body{
         <rect x="194" y="446" width="52" height="11" rx="3" fill="url(#rbG)" filter="url(#sfS)"/>
         <!-- bow left loop -->
         <path d="M220,450 C210,436 190,432 185,440 C180,448 194,456 220,452Z"
-          fill="#e07038" opacity=".9"/>
+          fill="#c89098" opacity=".9"/>
         <!-- bow right loop -->
         <path d="M220,450 C230,436 250,432 255,440 C260,448 246,456 220,452Z"
-          fill="#c84020" opacity=".9"/>
+          fill="#b07888" opacity=".9"/>
         <!-- bow knot -->
-        <ellipse cx="220" cy="451" rx="7" ry="5.5" fill="#b83010"/>
+        <ellipse cx="220" cy="451" rx="7" ry="5.5" fill="#9a6070"/>
         <!-- ribbon tails -->
-        <path d="M215,454 C208,464 202,470 196,478" stroke="#c04018" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-        <path d="M225,454 C232,464 238,470 244,478" stroke="#d05020" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M215,454 C208,464 202,470 196,478" stroke="#a86878" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M225,454 C232,464 238,470 244,478" stroke="#b07080" stroke-width="3.5" fill="none" stroke-linecap="round"/>
       </g>
 
     </g><!-- end #bouquet -->
@@ -334,15 +353,22 @@ body{
   </div>
 
   <div id="msg">
-    <div class="mname">NANY ✨</div>
+    <div class="mname">Daniela</div>
     <div class="mdiv"></div>
     <p class="mbody">
-      Sé que te gustan los girasoles,<br>
-      así que quise dejarte uno por aquí.<br><br>
-      Puede que no siempre digas mucho,<br>
-      pero hablar contigo siempre deja algo bueno.
+      Oye…<br><br>
+      ya te había mandado flores antes<br>
+      pero ahora sí van con la fecha correcta… como debe ser<br><br>
+      Igual, más allá de la fecha, el detalle siempre fue para ti<br>
+      solo porque sí…<br><br>
+      así que ahora sí… oficialmente son tuyas
     </p>
   </div>
+
+  <div id="btns">
+    <button class="rbtn" onclick="onButton()">Se ve mejor así, ¿no?</button>
+  </div>
+  <p id="reply"></p>
 </div>
 
 <script>
@@ -361,23 +387,19 @@ function stripFilters(){
   document.querySelectorAll('[filter]').forEach(el=>el.removeAttribute('filter'));
 }
 
-/* ═══ FLOWER DATA ═══ */
+/* ═══ FLOWER DATA — 3 flowers, centre is the main one ═══ */
 const FLOWERS = [
-  { id:0, cx:220, cy: 88, dr:51, oLen:88, iLen:70, pW:30, oN:22, iN:15, seeds:220 },
-  { id:1, cx:150, cy:118, dr:46, oLen:78, iLen:62, pW:26, oN:20, iN:13, seeds:185 },
-  { id:2, cx:290, cy:112, dr:46, oLen:78, iLen:62, pW:26, oN:20, iN:13, seeds:185 },
-  { id:3, cx: 80, cy:165, dr:40, oLen:65, iLen:52, pW:22, oN:18, iN:12, seeds:145 },
-  { id:4, cx:360, cy:155, dr:40, oLen:65, iLen:52, pW:22, oN:18, iN:12, seeds:145 },
+  { id:0, cx:220, cy: 84, dr:58, oLen:96, iLen:76, pW:32, oN:24, iN:16, seeds:240 }, // centre — bigger
+  { id:1, cx:150, cy:118, dr:46, oLen:80, iLen:64, pW:26, oN:20, iN:13, seeds:175 }, // left
+  { id:2, cx:290, cy:112, dr:46, oLen:80, iLen:64, pW:26, oN:20, iN:13, seeds:175 }, // right
 ];
 
-/* ═══ LEAF DATA  [id, attachX, attachY] ═══ */
+/* ═══ LEAF DATA ═══ */
 const LEAVES = [
-  { id:'lf0', ax:190, ay:305 },  // F1 left stem, points left
-  { id:'lf1', ax:250, ay:300 },  // F2 right stem, points right
-  { id:'lf2', ax:219, ay:330 },  // F0 centre, left
-  { id:'lf3', ax:221, ay:330 },  // F0 centre, right
-  { id:'lf4', ax:133, ay:318 },  // F3 far-left
-  { id:'lf5', ax:308, ay:312 },  // F4 far-right
+  { id:'lf0', ax:186, ay:308 },  // F1 left stem
+  { id:'lf1', ax:254, ay:302 },  // F2 right stem
+  { id:'lf2', ax:218, ay:338 },  // F0 centre left
+  { id:'lf3', ax:222, ay:338 },  // F0 centre right
 ];
 
 /* ═══ PARTICLES ═══ */
@@ -395,7 +417,7 @@ function rsz(){
 rsz(); addEventListener('resize', rsz);
 function mkp(){
   const t = ['petal','petal','petal','spark','circle'][Math.floor(Math.random()*5)];
-  const h = Math.random()*22+38;
+  const h = Math.random()*18+40;  // narrower range: warm gold 40-58, less orange
   // Pre-bake color strings once so drawParts never builds strings per frame
   const c0 = `hsla(${h+12},100%,74%,1)`;
   const c1 = `hsla(${h},95%,60%,1)`;
@@ -424,7 +446,7 @@ function drawParts(ts){
   _lastFrame = ts;
   _t += 0.016;
   pc.clearRect(0,0,innerWidth,innerHeight);
-  if(parts.length < MAX_PARTS) parts.push(mkp());
+  if(parts.length < MAX_PARTS_current) parts.push(mkp());
   parts = parts.filter(p=>{
     // use pre-baked phase offset instead of Date.now() per particle
     p.x += p.vx + Math.sin(_t*.6 + p.phase)*.28;
@@ -555,18 +577,18 @@ async function revealPetals(id){
   const list=flowerPetals[id];
   const inner=list.filter(p=>p.ring==='inner');
   const outer=list.filter(p=>p.ring==='outer');
-  inner.forEach((p,i)=>{ const d=i*42;
+  inner.forEach((p,i)=>{ const d=i*58;
     setTimeout(()=>{ p.el.style.opacity='1';
-      tween(460,t=>{ const s=easeOutBack(t);
+      tween(600,t=>{ const s=easeOutBack(t);
         p.el.setAttribute('transform',`translate(${p.bx},${p.by}) rotate(${p.ang}) scale(${s})`);
       });},d);});
-  await sleep(inner.length*42+180);
-  outer.forEach((p,i)=>{ const d=i*44;
+  await sleep(inner.length*58+220);
+  outer.forEach((p,i)=>{ const d=i*62;
     setTimeout(()=>{ p.el.style.opacity='1';
-      tween(500,t=>{ const s=easeOutBack(t);
+      tween(650,t=>{ const s=easeOutBack(t);
         p.el.setAttribute('transform',`translate(${p.bx},${p.by}) rotate(${p.ang}) scale(${s})`);
       });},d);});
-  await sleep(outer.length*44+360);
+  await sleep(outer.length*62+450);
 }
 
 /* ═══ STEM ANIMATION ═══ */
@@ -574,7 +596,7 @@ function animStem(el, delay){
   return sleep(delay).then(()=>{
     const len=el.getTotalLength();
     el.style.strokeDasharray=len; el.style.strokeDashoffset=len;
-    return tween(980,t=>{ el.style.strokeDashoffset=len*(1-easeInOut(t)); });
+    return tween(1200,t=>{ el.style.strokeDashoffset=len*(1-easeInOut(t)); });
   });
 }
 
@@ -587,7 +609,51 @@ function animLeaf(id,ax,ay,delay){
   });
 }
 
-/* ═══ MAIN ═══ */
+/* ═══ BUTTON INTERACTION ═══ */
+let MAX_PARTS_current = MAX_PARTS;
+let _btnUsed = false;
+
+function onButton(){
+  if(_btnUsed) return;
+  _btnUsed = true;
+
+  // Slightly more particles — gentle, not a flood
+  MAX_PARTS_current = isMobile ? 20 : 65;
+
+  // Glow ring — GPU composited opacity only
+  document.getElementById('glowRing').classList.add('pulse');
+
+  // Desktop: add filter glow too
+  if(!isMobile){
+    const wrap = document.getElementById('svgWrap');
+    wrap.style.transition = 'filter 1.4s ease';
+    wrap.style.filter = 'drop-shadow(0 0 22px rgba(255,215,80,.42)) drop-shadow(0 18px 48px rgba(100,55,4,.14))';
+  }
+
+  // Soft scale breathe on bouquet
+  const bq = document.getElementById('bouquet');
+  bq.style.transition = 'transform .5s cubic-bezier(.34,1.4,.64,1)';
+  bq.style.transform  = 'scale(1.04)';
+  setTimeout(()=>{ bq.style.transform='scale(1)'; bq.style.transition='transform .4s ease'; }, 520);
+
+  // Reply — calm, no emoji
+  showReply('sabía que sí');
+
+  // Fade button out
+  const btns = document.getElementById('btns');
+  btns.style.transition = 'opacity .5s ease';
+  btns.style.opacity = '0';
+  btns.style.pointerEvents = 'none';
+}
+
+function showReply(text){
+  const r = document.getElementById('reply');
+  r.classList.remove('on');
+  void r.offsetWidth;
+  r.textContent = text;
+  r.classList.add('on');
+}
+
 async function start(){
   document.getElementById('landing').classList.add('out');
   await sleep(650);
@@ -602,31 +668,31 @@ async function start(){
 
   await sleep(80);
 
-  /* 1 — stems all grow, staggered slightly */
+  /* 1 — stems grow, more stagger for calm feeling */
   const stEls=[...document.querySelectorAll('.stm')];
-  await Promise.all(stEls.map((s,i)=>animStem(s,i*90)));
-  await sleep(120);
+  await Promise.all(stEls.map((s,i)=>animStem(s,i*140)));
+  await sleep(180);
 
-  /* 2 — leaves */
-  await Promise.all(LEAVES.map((l,i)=>animLeaf(l.id,l.ax,l.ay,i*100)));
-  await sleep(200);
+  /* 2 — leaves — slower */
+  await Promise.all(LEAVES.map((l,i)=>animLeaf(l.id,l.ax,l.ay,i*130)));
+  await sleep(280);
 
   /* 3 — wrap + ribbon */
   const wrap=document.getElementById('wrap');
-  wrap.style.opacity='0'; wrap.style.transition='opacity .7s ease'; 
+  wrap.style.opacity='0'; wrap.style.transition='opacity .9s ease';
   wrap.style.opacity='1';
-  await sleep(600);
+  await sleep(750);
 
-  /* 4 — flowers back→front */
-  const order=[3,4,1,2,0];
+  /* 4 — flowers back→front: left, right, then centre last */
+  const order=[1,2,0];
   for(let i=0;i<order.length;i++){
     const f=FLOWERS.find(x=>x.id===order[i]);
     const cg=document.getElementById('cg'+f.id);
-    cg.style.transition='opacity .75s ease'; cg.style.opacity='1';
-    await sleep(360);
+    cg.style.transition='opacity .9s ease'; cg.style.opacity='1';
+    await sleep(i===2 ? 600 : 420); // extra pause before centre flower
     await revealSeeds(f.id);
     await revealPetals(f.id);
-    if(i<4) await sleep(140);
+    if(i<2) await sleep(200);
   }
 
   /* 5 — sway (desktop only — on mobile the whole bouquet repaints every frame) */
@@ -635,9 +701,11 @@ async function start(){
   /* 6 — particles */
   pcv.classList.add('on'); requestAnimationFrame(drawParts);
 
-  /* 7 — message */
-  await sleep(650);
+  /* 7 — message then button */
+  await sleep(900);
   document.getElementById('msg').classList.add('on');
+  await sleep(1600);
+  document.getElementById('btns').classList.add('on');
 }
 </script>
 </body>
